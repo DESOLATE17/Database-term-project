@@ -17,7 +17,7 @@ CREATE UNLOGGED TABLE forum
     Threads  INT    DEFAULT 0
 );
 
-CREATE UNLOGGED TABLE threads
+CREATE UNLOGGED TABLE thread
 (
     Id      SERIAL    PRIMARY KEY,
     Title   TEXT      NOT NULL,
@@ -29,7 +29,7 @@ CREATE UNLOGGED TABLE threads
     Created TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
-CREATE UNLOGGED TABLE posts
+CREATE UNLOGGED TABLE post
 (
     Id        SERIAL      PRIMARY KEY,
     Author    CITEXT,
@@ -40,17 +40,17 @@ CREATE UNLOGGED TABLE posts
     Parent    INT         DEFAULT 0,
     Thread    INT,
     Path      INTEGER[],
-    FOREIGN KEY (thread) REFERENCES "threads" (id),
+    FOREIGN KEY (thread) REFERENCES "thread" (id),
     FOREIGN KEY (author) REFERENCES "users"  (nickname)
 );
 
-CREATE UNLOGGED TABLE votes
+CREATE UNLOGGED TABLE vote
 (
     ID       SERIAL PRIMARY KEY,
     Author   CITEXT    REFERENCES "users" (Nickname),
     Voice    INT       NOT NULL,
     Thread   INT,
-    FOREIGN KEY (thread) REFERENCES "threads" (id),
+    FOREIGN KEY (thread) REFERENCES "thread" (id),
     UNIQUE (Author, Thread)
 );
 

@@ -1,14 +1,13 @@
-FROM golang:1.20 AS lang
+FROM golang:1.19 AS lang
 
 ADD . /opt/app
 WORKDIR /opt/app
 RUN go build ./cmd/main.go
 
 FROM ubuntu:20.04
-
-RUN apt-get -y update
-RUN apt-get install -y tzdata
-RUN apt-get -y update && apt-get install -y postgresql-12
+RUN apt-get -y update &&\
+    apt-get install -y tzdata &&\
+    apt-get -y update && apt-get install -y postgresql-12
 
 USER postgres
 

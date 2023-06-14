@@ -32,21 +32,21 @@ func main() {
 	{
 		forum.HandleFunc("/user/{nickname}/create", fHandler.CreateUser).Methods(http.MethodPost)
 		forum.HandleFunc("/user/{nickname}/profile", fHandler.GetUser).Methods(http.MethodGet)
-		//forum.HandleFunc("/user/{nickname}/profile", fHandler.ChangeInfoUser).Methods(http.MethodPost)
+		forum.HandleFunc("/user/{nickname}/profile", fHandler.ChangeUserInfo).Methods(http.MethodPost)
 
-		//forum.HandleFunc("/forum/create", fHandler.CreateForum).Methods(http.MethodPost)
-		//forum.HandleFunc("/forum/{slug}/details", fHandler.ForumInfo).Methods(http.MethodGet)
-		//forum.HandleFunc("/forum/{slug}/create", fHandler.CreateThreadsForum).Methods(http.MethodPost)
+		forum.HandleFunc("/forum/create", fHandler.CreateForum).Methods(http.MethodPost)
+		forum.HandleFunc("/forum/{slug}/details", fHandler.ForumInfo).Methods(http.MethodGet)
+		forum.HandleFunc("/forum/{slug}/create", fHandler.CreateForumThread).Methods(http.MethodPost)
 		//forum.HandleFunc("/forum/{slug}/users", fHandler.GetUsersForum).Methods(http.MethodGet)
 		//forum.HandleFunc("/forum/{slug}/threads", fHandler.GetThreadsForum).Methods(http.MethodGet)
-		//
+
 		//forum.HandleFunc("/post/{id}/details", fHandler.GetPostInfo).Methods(http.MethodGet)
 		//forum.HandleFunc("/post/{id}/details", fHandler.UpdatePostInfo).Methods(http.MethodPost)
-		//
+
 		//forum.HandleFunc("/service/clear", fHandler.GetClear).Methods(http.MethodPost)
 		//forum.HandleFunc("/service/status", fHandler.GetStatus).Methods(http.MethodGet)
-		//
-		//forum.HandleFunc("/thread/{slug_or_id}/create", fHandler.CreatePosts).Methods(http.MethodPost)
+
+		forum.HandleFunc("/thread/{slug_or_id}/create", fHandler.CreatePosts).Methods(http.MethodPost)
 		//forum.HandleFunc("/thread/{slug_or_id}/details", fHandler.GetThreadInfo).Methods(http.MethodGet)
 		//forum.HandleFunc("/thread/{slug_or_id}/details", fHandler.UpdateThreadInfo).Methods(http.MethodPost)
 		//forum.HandleFunc("/thread/{slug_or_id}/posts", fHandler.GetPostOfThread).Methods(http.MethodGet)
