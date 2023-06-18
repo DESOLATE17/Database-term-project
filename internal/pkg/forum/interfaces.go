@@ -14,6 +14,15 @@ type UseCase interface {
 	CheckThreadIdOrSlug(ctx context.Context, slugOrId string) (models.Thread, error)
 	CreatePosts(ctx context.Context, posts []models.Post, thread models.Thread) ([]models.Post, error)
 	CreateForumThread(ctx context.Context, thread models.Thread) (models.Thread, error)
+	GetPostOfThread(ctx context.Context, params models.SortParams, threadID int) ([]models.Post, error)
+	GetForumThreads(ctx context.Context, forum models.Forum, params models.SortParams) ([]models.Thread, error)
+	Vote(ctx context.Context, vote models.Vote) error
+	UpdateThreadInfo(ctx context.Context, slugOrId string, updateThread models.Thread) (models.Thread, error)
+	GetUsersOfForum(ctx context.Context, forum models.Forum, params models.SortParams) ([]models.User, error)
+	GetFullPostInfo(ctx context.Context, posts models.PostFull, related []string) (models.PostFull, error)
+	UpdatePostInfo(ctx context.Context, postUpdate models.PostUpdate) (models.Post, error)
+	GetStatus(ctx context.Context) models.Status
+	GetClear(ctx context.Context)
 }
 
 type Repository interface {
@@ -27,4 +36,17 @@ type Repository interface {
 	GetThreadByID(ctx context.Context, id int) (models.Thread, error)
 	CreatePosts(ctx context.Context, posts []models.Post, thread models.Thread) ([]models.Post, error)
 	CreateThread(ctx context.Context, thread models.Thread) (models.Thread, error)
+	GetPostsFlat(ctx context.Context, params models.SortParams, threadID int) ([]models.Post, error)
+	GetPostsTree(ctx context.Context, params models.SortParams, threadID int) ([]models.Post, error)
+	GetPostsParent(ctx context.Context, params models.SortParams, threadID int) ([]models.Post, error)
+	GetForumThreads(ctx context.Context, forum models.Forum, params models.SortParams) ([]models.Thread, error)
+	ForumCheck(ctx context.Context, slug string) (string, error)
+	Vote(ctx context.Context, vote models.Vote) error
+	UpdateVote(ctx context.Context, vote models.Vote) error
+	UpdateThreadInfo(ctx context.Context, upThread models.Thread) (models.Thread, error)
+	GetUsersOfForum(ctx context.Context, forum models.Forum, params models.SortParams) ([]models.User, error)
+	GetFullPostInfo(ctx context.Context, posts models.PostFull, related []string) (models.PostFull, error)
+	UpdatePostInfo(ctx context.Context, postUpdate models.PostUpdate) (models.Post, error)
+	GetStatus(ctx context.Context) models.Status
+	GetClear(ctx context.Context)
 }

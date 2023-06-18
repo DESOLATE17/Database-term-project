@@ -18,7 +18,213 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels(in *jlexer.Lexer, out *Post) {
+func easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels(in *jlexer.Lexer, out *PostUpdate) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "id":
+			out.ID = int(in.Int())
+		case "message":
+			out.Message = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels(out *jwriter.Writer, in PostUpdate) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if in.ID != 0 {
+		const prefix string = ",\"id\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.Int(int(in.ID))
+	}
+	if in.Message != "" {
+		const prefix string = ",\"message\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Message))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v PostUpdate) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v PostUpdate) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *PostUpdate) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *PostUpdate) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels(l, v)
+}
+func easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels1(in *jlexer.Lexer, out *PostFull) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "thread":
+			if in.IsNull() {
+				in.Skip()
+				out.Thread = nil
+			} else {
+				if out.Thread == nil {
+					out.Thread = new(Thread)
+				}
+				(*out.Thread).UnmarshalEasyJSON(in)
+			}
+		case "forum":
+			if in.IsNull() {
+				in.Skip()
+				out.Forum = nil
+			} else {
+				if out.Forum == nil {
+					out.Forum = new(Forum)
+				}
+				(*out.Forum).UnmarshalEasyJSON(in)
+			}
+		case "author":
+			if in.IsNull() {
+				in.Skip()
+				out.Author = nil
+			} else {
+				if out.Author == nil {
+					out.Author = new(User)
+				}
+				(*out.Author).UnmarshalEasyJSON(in)
+			}
+		case "post":
+			(out.Post).UnmarshalEasyJSON(in)
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels1(out *jwriter.Writer, in PostFull) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if in.Thread != nil {
+		const prefix string = ",\"thread\":"
+		first = false
+		out.RawString(prefix[1:])
+		(*in.Thread).MarshalEasyJSON(out)
+	}
+	if in.Forum != nil {
+		const prefix string = ",\"forum\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(*in.Forum).MarshalEasyJSON(out)
+	}
+	if in.Author != nil {
+		const prefix string = ",\"author\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(*in.Author).MarshalEasyJSON(out)
+	}
+	if true {
+		const prefix string = ",\"post\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.Post).MarshalEasyJSON(out)
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v PostFull) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels1(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v PostFull) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels1(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *PostFull) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels1(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *PostFull) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels1(l, v)
+}
+func easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels2(in *jlexer.Lexer, out *Post) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -67,7 +273,7 @@ func easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels(
 		in.Consumed()
 	}
 }
-func easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels(out *jwriter.Writer, in Post) {
+func easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels2(out *jwriter.Writer, in Post) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -133,27 +339,27 @@ func easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels(
 // MarshalJSON supports json.Marshaler interface
 func (v Post) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels(&w, v)
+	easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels2(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Post) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels(w, v)
+	easyjson5a72dc82EncodeGithubComDESOLATE17DatabaseTermProjectInternalModels2(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Post) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels(&r, v)
+	easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels2(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Post) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels(l, v)
+	easyjson5a72dc82DecodeGithubComDESOLATE17DatabaseTermProjectInternalModels2(l, v)
 }
-func easyjson5a72dc82DecodeGithubComJackcPgtype(in *jlexer.Lexer, out *pgtype.Int8Array) {
+func easyjson5a72dc82DecodeGithubComJackcPgtype(in *jlexer.Lexer, out *pgtype.Int4Array) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -180,15 +386,15 @@ func easyjson5a72dc82DecodeGithubComJackcPgtype(in *jlexer.Lexer, out *pgtype.In
 				in.Delim('[')
 				if out.Elements == nil {
 					if !in.IsDelim(']') {
-						out.Elements = make([]pgtype.Int8, 0, 4)
+						out.Elements = make([]pgtype.Int4, 0, 8)
 					} else {
-						out.Elements = []pgtype.Int8{}
+						out.Elements = []pgtype.Int4{}
 					}
 				} else {
 					out.Elements = (out.Elements)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v1 pgtype.Int8
+					var v1 pgtype.Int4
 					if data := in.Raw(); in.Ok() {
 						in.AddError((v1).UnmarshalJSON(data))
 					}
@@ -232,7 +438,7 @@ func easyjson5a72dc82DecodeGithubComJackcPgtype(in *jlexer.Lexer, out *pgtype.In
 		in.Consumed()
 	}
 }
-func easyjson5a72dc82EncodeGithubComJackcPgtype(out *jwriter.Writer, in pgtype.Int8Array) {
+func easyjson5a72dc82EncodeGithubComJackcPgtype(out *jwriter.Writer, in pgtype.Int4Array) {
 	out.RawByte('{')
 	first := true
 	_ = first

@@ -9,6 +9,9 @@ RUN apt-get -y update &&\
     apt-get install -y tzdata &&\
     apt-get -y update && apt-get install -y postgresql-12
 
+ENV TZ=Russia/Moscow
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 USER postgres
 
 RUN /etc/init.d/postgresql start &&\

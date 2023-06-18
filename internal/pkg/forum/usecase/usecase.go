@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/DESOLATE17/Database-term-project/internal/models"
 	"github.com/DESOLATE17/Database-term-project/internal/pkg/forum"
-	"github.com/jackc/pgconn"
 	"strconv"
 )
 
@@ -33,14 +32,7 @@ func (u *UseCase) CreateUser(ctx context.Context, user models.User) ([]models.Us
 }
 
 func (u *UseCase) UpdateUserInfo(ctx context.Context, user models.User) (models.User, error) {
-	updatedUser, err := u.repo.UpdateUserInfo(ctx, user)
-	if err != nil {
-		if pgError, ok := err.(*pgconn.PgError); ok && pgError.Code == "23505" { // unique_violation code
-			return updatedUser, models.Conflict
-		}
-		return updatedUser, models.NotFound
-	}
-	return updatedUser, nil
+	return u.repo.UpdateUserInfo(ctx, user)
 }
 
 func (u *UseCase) CreateForum(ctx context.Context, forum models.Forum) (models.Forum, error) {
@@ -51,15 +43,9 @@ func (u *UseCase) CreateForum(ctx context.Context, forum models.Forum) (models.F
 	forum.User = user.NickName
 
 	err = u.repo.CreateForum(ctx, forum)
-	if err != nil {
-		//if pgError, ok := errI.(*pgconn.PgError); ok && pgError.Code == "23503" {
-		//	return models.Forum{}, models.NotFound
-		//}
-		if pgError, ok := err.(*pgconn.PgError); ok && pgError.Code == "23505" {
-			forum, _ = u.repo.GetForum(ctx, forum.Slug)
-			return forum, models.Conflict
-		}
-		return models.Forum{}, models.InternalError
+	if err == models.Conflict {
+		forum, _ = u.repo.GetForum(ctx, forum.Slug)
+		return forum, models.Conflict
 	}
 	return forum, nil
 }
@@ -77,37 +63,85 @@ func (u *UseCase) CheckThreadIdOrSlug(ctx context.Context, slugOrId string) (mod
 }
 
 func (u *UseCase) CreatePosts(ctx context.Context, posts []models.Post, thread models.Thread) ([]models.Post, error) {
-	posts, err := u.repo.CreatePosts(ctx, posts, thread)
-	if err != nil {
-		if pgError, ok := err.(*pgconn.PgError); ok && pgError.Code == "23503" { // foreign key
-			return nil, models.NotFound
-		}
-		return nil, models.Conflict
-	}
-	return posts, nil
+	return u.repo.CreatePosts(ctx, posts, thread)
 }
 
 func (u *UseCase) CreateForumThread(ctx context.Context, thread models.Thread) (models.Thread, error) {
-	//user, err := u.repo.GetUser(ctx, thread.Author)
-	//if err != nil {
-	//	return models.Thread{}, models.NotFound
-	//}
-	//
-	//forum, err := u.repo.ForumCheck(models.Forum{Slug: thread.Forum})
-	//if err == models.NotFound {
-	//	return models.Thread{}, models.NotFound
-	//}
-	//
-	//thread.Author = user.NickName
-	//thread.Forum = forum.Slug
-
-	//if thread.Slug != "" {
-	//	thread, status := u.repo.CheckSlug(thread)
-	//	if status == nil {
-	//		th, _ := u.repo.GetThreadBySlug(ctx, thread.Slug)
-	//		return th, models.Conflict
-	//	}
-	//}
+	if thread.Slug != "" {
+		th, err := u.repo.GetThreadBySlug(ctx, thread.Slug)
+		if err == nil {
+			return th, models.Conflict
+		}
+	}
+	f, status := u.repo.ForumCheck(ctx, thread.Forum)
+	if status == models.NotFound {
+		return models.Thread{}, models.NotFound
+	}
+	thread.Forum = f
 
 	return u.repo.CreateThread(ctx, thread)
+}
+
+func (u *UseCase) GetPostOfThread(ctx context.Context, params models.SortParams, threadID int) ([]models.Post, error) {
+	switch params.Sort {
+	case "flat":
+		return u.repo.GetPostsFlat(ctx, params, threadID)
+	case "tree":
+		return u.repo.GetPostsTree(ctx, params, threadID)
+	case "parent_tree":
+		return u.repo.GetPostsParent(ctx, params, threadID)
+	default:
+		return u.repo.GetPostsFlat(ctx, params, threadID)
+	}
+}
+
+func (u *UseCase) GetForumThreads(ctx context.Context, forum models.Forum, params models.SortParams) ([]models.Thread, error) {
+	_, err := u.repo.GetForum(ctx, forum.Slug)
+	if err != nil {
+		return nil, err
+	}
+	return u.repo.GetForumThreads(ctx, forum, params)
+}
+
+func (u *UseCase) Vote(ctx context.Context, vote models.Vote) error {
+	err := u.repo.Vote(ctx, vote)
+	if err == models.Conflict {
+		return u.repo.UpdateVote(ctx, vote)
+	}
+	return err
+}
+
+func (u *UseCase) UpdateThreadInfo(ctx context.Context, slugOrId string, updateThread models.Thread) (models.Thread, error) {
+	threadID, err := strconv.Atoi(slugOrId)
+	if err != nil {
+		updateThread.Slug = slugOrId
+	} else {
+		updateThread.ID = threadID
+	}
+	return u.repo.UpdateThreadInfo(ctx, updateThread)
+}
+
+func (u *UseCase) GetUsersOfForum(ctx context.Context, forum models.Forum, params models.SortParams) ([]models.User, error) {
+	_, err := u.repo.GetForum(ctx, forum.Slug)
+	if err != nil {
+		return nil, err
+	}
+
+	return u.repo.GetUsersOfForum(ctx, forum, params)
+}
+
+func (u *UseCase) GetFullPostInfo(ctx context.Context, posts models.PostFull, related []string) (models.PostFull, error) {
+	return u.repo.GetFullPostInfo(ctx, posts, related)
+}
+
+func (u *UseCase) UpdatePostInfo(ctx context.Context, postUpdate models.PostUpdate) (models.Post, error) {
+	return u.repo.UpdatePostInfo(ctx, postUpdate)
+}
+
+func (u *UseCase) GetClear(ctx context.Context) {
+	u.repo.GetClear(ctx)
+}
+
+func (u *UseCase) GetStatus(ctx context.Context) models.Status {
+	return u.repo.GetStatus(ctx)
 }

@@ -8,6 +8,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mailru/easyjson"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 type Handler struct {
@@ -159,7 +161,7 @@ func (h *Handler) CreatePosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err == models.Conflict {
-		utils.Response(w, http.StatusConflict, nil)
+		utils.Response(w, http.StatusConflict, models.ErrorResponse{Message: "Parent post was created in another thread"})
 		return
 	}
 
@@ -192,4 +194,215 @@ func (h *Handler) CreateForumThread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.Response(w, http.StatusCreated, thread)
+}
+
+func (h *Handler) ThreadInfo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	slugOrId, found := vars["slug_or_id"]
+	if !found {
+		utils.Response(w, http.StatusNotFound, nil)
+		return
+	}
+	finalThread, err := h.uc.CheckThreadIdOrSlug(r.Context(), slugOrId)
+	if err == models.NotFound {
+		utils.Response(w, http.StatusNotFound, slugOrId)
+		return
+	}
+	utils.Response(w, http.StatusOK, finalThread)
+}
+
+func (h *Handler) GetPostsOfThread(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	slugOrId, found := vars["slug_or_id"]
+	if !found {
+		utils.Response(w, http.StatusNotFound, nil)
+		return
+	}
+	params := models.SortParams{}
+	params.Desc = r.URL.Query().Get("desc")
+	params.Limit = r.URL.Query().Get("limit")
+	params.Since = r.URL.Query().Get("since")
+	params.Sort = r.URL.Query().Get("sort")
+
+	thread, err := h.uc.CheckThreadIdOrSlug(r.Context(), slugOrId)
+	if err == models.NotFound {
+		utils.Response(w, http.StatusNotFound, slugOrId)
+		return
+	}
+
+	finalPosts, err := h.uc.GetPostOfThread(r.Context(), params, thread.ID)
+	if err == nil {
+		utils.Response(w, http.StatusOK, finalPosts)
+		return
+	}
+	utils.Response(w, http.StatusNotFound, slugOrId)
+}
+
+func (h *Handler) GetForumThreads(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	slug, found := vars["slug"]
+	if !found {
+		utils.Response(w, http.StatusNotFound, nil)
+		return
+	}
+	params := models.SortParams{}
+	params.Desc = r.URL.Query().Get("desc")
+	params.Limit = r.URL.Query().Get("limit")
+	params.Since = r.URL.Query().Get("since")
+
+	forumS := models.Forum{Slug: slug}
+
+	threads, err := h.uc.GetForumThreads(r.Context(), forumS, params)
+	if err == nil {
+		utils.Response(w, http.StatusOK, threads)
+		return
+	}
+	utils.Response(w, http.StatusNotFound, slug)
+}
+
+func (h *Handler) Vote(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	slugOrId, found := vars["slug_or_id"]
+	if !found {
+		utils.Response(w, http.StatusNotFound, nil)
+		return
+	}
+
+	thread, err := h.uc.CheckThreadIdOrSlug(r.Context(), slugOrId)
+	if err != nil {
+		utils.Response(w, http.StatusNotFound, slugOrId)
+		return
+	}
+
+	vote := models.Vote{}
+	err = easyjson.UnmarshalFromReader(r.Body, &vote)
+	if err != nil {
+		utils.Response(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	if thread.ID != 0 {
+		vote.Thread = thread.ID
+	}
+
+	err = h.uc.Vote(r.Context(), vote)
+	if err != nil {
+		utils.Response(w, http.StatusNotFound, slugOrId)
+		return
+	}
+
+	finalThread, _ := h.uc.CheckThreadIdOrSlug(r.Context(), slugOrId)
+	utils.Response(w, http.StatusOK, finalThread)
+}
+
+func (h *Handler) UpdateThreadInfo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	slugOrId, found := vars["slug_or_id"]
+	if !found {
+		utils.Response(w, http.StatusNotFound, nil)
+		return
+	}
+	thread := models.Thread{}
+	err := easyjson.UnmarshalFromReader(r.Body, &thread)
+	if err != nil {
+		utils.Response(w, http.StatusInternalServerError, nil)
+		return
+	}
+	finalThread, err := h.uc.UpdateThreadInfo(r.Context(), slugOrId, thread)
+	if err == nil {
+		utils.Response(w, http.StatusOK, finalThread)
+		return
+	}
+	utils.Response(w, http.StatusNotFound, slugOrId)
+}
+
+func (h *Handler) GetUsersOfForum(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	slug, found := vars["slug"]
+	if !found {
+		utils.Response(w, http.StatusNotFound, nil)
+		return
+	}
+	params := models.SortParams{}
+	params.Desc = r.URL.Query().Get("desc")
+	params.Limit = r.URL.Query().Get("limit")
+	params.Since = r.URL.Query().Get("since")
+
+	if params.Limit == "" {
+		params.Limit = "100"
+	}
+
+	forum := models.Forum{Slug: slug}
+
+	users, err := h.uc.GetUsersOfForum(r.Context(), forum, params)
+	if err == nil {
+		utils.Response(w, http.StatusOK, users)
+		return
+	}
+	utils.Response(w, http.StatusNotFound, slug)
+}
+
+func (h *Handler) GetPostInfo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idV, found := vars["id"]
+	if !found {
+		utils.Response(w, http.StatusNotFound, nil)
+		return
+	}
+
+	id, _ := strconv.Atoi(idV)
+	query := r.URL.Query()
+
+	var related []string
+	if relateds := query["related"]; len(relateds) > 0 {
+		related = strings.Split(relateds[0], ",")
+	}
+
+	postFull := models.PostFull{}
+
+	postFull.Post.ID = id
+	finalPost, err := h.uc.GetFullPostInfo(r.Context(), postFull, related)
+	if err == nil {
+		utils.Response(w, http.StatusOK, finalPost)
+		return
+	}
+	utils.Response(w, http.StatusNotFound, id)
+}
+
+func (h *Handler) UpdatePostInfo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	ids, found := vars["id"]
+	if !found {
+		utils.Response(w, http.StatusNotFound, nil)
+		return
+	}
+
+	postUpdate := models.PostUpdate{}
+	err := easyjson.UnmarshalFromReader(r.Body, &postUpdate)
+	if err != nil {
+		utils.Response(w, http.StatusInternalServerError, nil)
+		return
+	}
+	id, err := strconv.Atoi(ids)
+
+	if err == nil {
+		postUpdate.ID = id
+	}
+
+	finalPost, err := h.uc.UpdatePostInfo(r.Context(), postUpdate)
+	if err == nil {
+		utils.Response(w, http.StatusOK, finalPost)
+		return
+	}
+	utils.Response(w, http.StatusNotFound, id)
+}
+
+func (h *Handler) GetClear(w http.ResponseWriter, r *http.Request) {
+	h.uc.GetClear(r.Context())
+	utils.Response(w, http.StatusOK, nil)
+}
+
+func (h *Handler) GetStatus(w http.ResponseWriter, r *http.Request) {
+	status := h.uc.GetStatus(r.Context())
+	utils.Response(w, http.StatusOK, status)
 }
