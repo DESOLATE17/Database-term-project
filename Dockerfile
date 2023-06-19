@@ -21,8 +21,6 @@ RUN /etc/init.d/postgresql start &&\
 
 EXPOSE 5432
 
-VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
-
 USER root
 
 WORKDIR /usr/src/app
