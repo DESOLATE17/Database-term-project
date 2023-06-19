@@ -49,11 +49,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := models.User{}
-	err := easyjson.UnmarshalFromReader(r.Body, &user)
-	if err != nil {
-		utils.Response(w, http.StatusInternalServerError, nil)
-		return
-	}
+	_ = easyjson.UnmarshalFromReader(r.Body, &user)
 	user.NickName = nickname
 
 	finalUser, err := h.uc.CreateUser(r.Context(), user)
@@ -74,11 +70,7 @@ func (h *Handler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := models.User{}
-	err := easyjson.UnmarshalFromReader(r.Body, &user)
-	if err != nil {
-		utils.Response(w, http.StatusInternalServerError, nil)
-		return
-	}
+	_ = easyjson.UnmarshalFromReader(r.Body, &user)
 	user.NickName = nickname
 
 	updatedUser, err := h.uc.UpdateUserInfo(r.Context(), user)
@@ -95,11 +87,7 @@ func (h *Handler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) CreateForum(w http.ResponseWriter, r *http.Request) {
 	forum := models.Forum{}
-	err := easyjson.UnmarshalFromReader(r.Body, &forum)
-	if err != nil {
-		utils.Response(w, http.StatusInternalServerError, nil)
-		return
-	}
+	_ = easyjson.UnmarshalFromReader(r.Body, &forum)
 
 	finalForum, err := h.uc.CreateForum(r.Context(), forum)
 	if err == models.Conflict {
@@ -144,11 +132,7 @@ func (h *Handler) CreatePosts(w http.ResponseWriter, r *http.Request) {
 	}
 	var posts []models.Post
 	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&posts)
-	if err != nil {
-		utils.Response(w, http.StatusInternalServerError, nil)
-		return
-	}
+	_ = decoder.Decode(&posts)
 
 	if len(posts) == 0 {
 		utils.Response(w, http.StatusCreated, []models.Post{})
@@ -177,14 +161,10 @@ func (h *Handler) CreateForumThread(w http.ResponseWriter, r *http.Request) {
 	}
 
 	thread := models.Thread{}
-	err := easyjson.UnmarshalFromReader(r.Body, &thread)
-	if err != nil {
-		utils.Response(w, http.StatusInternalServerError, nil)
-		return
-	}
+	_ = easyjson.UnmarshalFromReader(r.Body, &thread)
 	thread.Forum = slug
 
-	thread, err = h.uc.CreateForumThread(r.Context(), thread)
+	thread, err := h.uc.CreateForumThread(r.Context(), thread)
 	if err == models.Conflict {
 		utils.Response(w, http.StatusConflict, thread)
 		return
@@ -275,11 +255,7 @@ func (h *Handler) Vote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vote := models.Vote{}
-	err = easyjson.UnmarshalFromReader(r.Body, &vote)
-	if err != nil {
-		utils.Response(w, http.StatusInternalServerError, nil)
-		return
-	}
+	_ = easyjson.UnmarshalFromReader(r.Body, &vote)
 
 	if thread.ID != 0 {
 		vote.Thread = thread.ID
@@ -303,11 +279,7 @@ func (h *Handler) UpdateThreadInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	thread := models.Thread{}
-	err := easyjson.UnmarshalFromReader(r.Body, &thread)
-	if err != nil {
-		utils.Response(w, http.StatusInternalServerError, nil)
-		return
-	}
+	_ = easyjson.UnmarshalFromReader(r.Body, &thread)
 	finalThread, err := h.uc.UpdateThreadInfo(r.Context(), slugOrId, thread)
 	if err == nil {
 		utils.Response(w, http.StatusOK, finalThread)
@@ -378,11 +350,8 @@ func (h *Handler) UpdatePostInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	postUpdate := models.PostUpdate{}
-	err := easyjson.UnmarshalFromReader(r.Body, &postUpdate)
-	if err != nil {
-		utils.Response(w, http.StatusInternalServerError, nil)
-		return
-	}
+	_ = easyjson.UnmarshalFromReader(r.Body, &postUpdate)
+
 	id, err := strconv.Atoi(ids)
 
 	if err == nil {

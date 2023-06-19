@@ -320,6 +320,7 @@ func (r *repoPostgres) GetPostsTree(ctx context.Context, params models.SortParam
 		onePost := models.Post{}
 		err := rows.Scan(&onePost.ID, &onePost.Author, &onePost.Created, &onePost.Forum, &onePost.IsEdited, &onePost.Message, &onePost.Parent, &onePost.Thread)
 		if err != nil {
+			fmt.Println(err)
 			return posts, models.InternalError
 		}
 		posts = append(posts, onePost)
@@ -367,6 +368,7 @@ func (r *repoPostgres) GetPostsParent(ctx context.Context, params models.SortPar
 		onePost := models.Post{}
 		err := rows.Scan(&onePost.ID, &onePost.Author, &onePost.Created, &onePost.Forum, &onePost.IsEdited, &onePost.Message, &onePost.Parent, &onePost.Thread)
 		if err != nil {
+			fmt.Println(err)
 			return posts, models.InternalError
 		}
 		posts = append(posts, onePost)
@@ -588,30 +590,18 @@ func (r *repoPostgres) UpdatePostInfo(ctx context.Context, postUpdate models.Pos
 // TODO maybe should do 1 query
 func (r *repoPostgres) GetStatus(ctx context.Context) models.Status {
 	const (
-		SelectCountUsers   = `SELECT count(*) FROM users;`
-		SelectCountForum   = `SELECT count(*) FROM forum;`
-		SelectCountThreads = `SELECT count(*) FROM thread;`
-		SelectCountPosts   = `SELECT count(*) FROM post;`
+		GetStatus = `SELECT Threads, Users, Forums, Posts FROM status;`
 	)
 	status := models.Status{}
-	row := r.Conn.QueryRow(ctx, SelectCountUsers)
-	_ = row.Scan(&status.User)
-
-	row = r.Conn.QueryRow(ctx, SelectCountForum)
-	_ = row.Scan(&status.Forum)
-
-	row = r.Conn.QueryRow(ctx, SelectCountThreads)
-	_ = row.Scan(&status.Thread)
-
-	row = r.Conn.QueryRow(ctx, SelectCountPosts)
-	_ = row.Scan(&status.Post)
-
+	row := r.Conn.QueryRow(ctx, GetStatus)
+	err := row.Scan(&status.Threads, &status.Users, &status.Forums, &status.Posts)
+	fmt.Println(err)
 	return status
 }
 
 func (r *repoPostgres) GetClear(ctx context.Context) {
 	const (
-		ClearAll = `TRUNCATE TABLE users, forum, thread, post, vote, users_forum CASCADE;`
+		ClearAll = `TRUNCATE TABLE users, forum, thread, post, vote, users_forum, status CASCADE;`
 	)
 	_, _ = r.Conn.Exec(ctx, ClearAll)
 }

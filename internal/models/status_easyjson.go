@@ -37,13 +37,13 @@ func easyjson727fe99aDecodeGithubComDESOLATE17DatabaseTermProjectInternalModels(
 		}
 		switch key {
 		case "forum":
-			out.Forum = int64(in.Int64())
+			out.Forums = int64(in.Int64())
 		case "post":
-			out.Post = int64(in.Int64())
+			out.Posts = int64(in.Int64())
 		case "thread":
-			out.Thread = int64(in.Int64())
+			out.Threads = int64(in.Int64())
 		case "user":
-			out.User = int64(in.Int64())
+			out.Users = int64(in.Int64())
 		default:
 			in.SkipRecursive()
 		}
@@ -61,22 +61,22 @@ func easyjson727fe99aEncodeGithubComDESOLATE17DatabaseTermProjectInternalModels(
 	{
 		const prefix string = ",\"forum\":"
 		out.RawString(prefix[1:])
-		out.Int64(int64(in.Forum))
+		out.Int64(int64(in.Forums))
 	}
 	{
 		const prefix string = ",\"post\":"
 		out.RawString(prefix)
-		out.Int64(int64(in.Post))
+		out.Int64(int64(in.Posts))
 	}
 	{
 		const prefix string = ",\"thread\":"
 		out.RawString(prefix)
-		out.Int64(int64(in.Thread))
+		out.Int64(int64(in.Threads))
 	}
 	{
 		const prefix string = ",\"user\":"
 		out.RawString(prefix)
-		out.Int64(int64(in.User))
+		out.Int64(int64(in.Users))
 	}
 	out.RawByte('}')
 }

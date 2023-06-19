@@ -67,6 +67,15 @@ CREATE UNLOGGED TABLE users_forum
     UNIQUE (Nickname, Slug)
 );
 
+CREATE UNLOGGED TABLE status
+(
+    id      INT unique,
+    Threads INT DEFAULT 0,
+    Users   INT DEFAULT 0,
+    Forums  INT DEFAULT 0,
+    Posts   INT DEFAULT 0
+);
+
 CREATE OR REPLACE FUNCTION updatePostUsersForum() RETURNS TRIGGER AS
 $update_forum_posts$
 DECLARE
@@ -78,6 +87,9 @@ BEGIN
     INSERT INTO users_forum (nickname, fullname, about, email, Slug)
     VALUES (New.Author, t_fullname, t_about, t_email, NEW.forum)
     on conflict do nothing;
+    INSERT INTO status (id, Posts)
+    VALUES (1, 1)
+    ON CONFLICT (id) DO UPDATE SET Posts=(status.Posts + 1);
     return NEW;
 end
 $update_forum_posts$ LANGUAGE plpgsql;
@@ -87,6 +99,39 @@ CREATE TRIGGER post_user_forum
     ON post
     FOR EACH ROW
 EXECUTE PROCEDURE updatePostUsersForum();
+
+CREATE OR REPLACE FUNCTION updateStatusUsers() RETURNS TRIGGER AS
+$update_status_users$
+BEGIN
+    INSERT INTO status (id, Users)
+    VALUES (1, 1)
+    ON CONFLICT (id) DO UPDATE
+        SET Users = status.Users + 1;
+    return NEW;
+end
+$update_status_users$ LANGUAGE plpgsql;
+
+CREATE TRIGGER status_users
+    BEFORE INSERT
+    ON users
+    FOR EACH ROW
+EXECUTE PROCEDURE updateStatusUsers();
+
+CREATE OR REPLACE FUNCTION updateStatusForums() RETURNS TRIGGER AS
+$update_status_forums$
+BEGIN
+    INSERT INTO status (id, Forums)
+    VALUES (1, 1)
+    ON CONFLICT (id) DO UPDATE SET Forums=(status.Forums + 1);
+    return NEW;
+end
+$update_status_forums$ LANGUAGE plpgsql;
+
+CREATE TRIGGER status_forums
+    AFTER INSERT
+    ON forum
+    FOR EACH ROW
+EXECUTE PROCEDURE updateStatusForums();
 
 CREATE OR REPLACE FUNCTION updateThreadUserForum() RETURNS TRIGGER AS
 $update_user_forum$
@@ -117,7 +162,10 @@ EXECUTE PROCEDURE updateThreadUserForum();
 CREATE OR REPLACE FUNCTION updateCountOfThreads() RETURNS TRIGGER AS
 $update_forum_threads$
 BEGIN
-    UPDATE forum SET Threads=(Threads + 1) WHERE slug = NEW.forum;
+    UPDATE forum SET Threads=(forum.Threads + 1) WHERE forum.slug = NEW.forum;
+    INSERT INTO status (id, Threads)
+    VALUES (1, 1)
+    ON CONFLICT (id) DO UPDATE SET Threads=(status.Threads + 1);
     return NEW;
 end
 $update_forum_threads$ LANGUAGE plpgsql;
